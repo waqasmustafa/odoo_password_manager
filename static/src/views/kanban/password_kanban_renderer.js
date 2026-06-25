@@ -6,7 +6,7 @@ import { PasswordKanbanRecord } from "./password_kanban_record";
 import { PasswordManager } from "@odoo_password_manager/components/password_manager/password_manager";
 import { PasswordNavigation } from "@odoo_password_manager/components/password_navigation/password_navigation";
 import { useService } from "@web/core/utils/hooks";
-import { onWillStart, useState } from "@odoo/owl";
+import { onWillStart, onMounted, useState } from "@odoo/owl";
 const componentModel = "password.key";
 
 
@@ -23,11 +23,16 @@ export class PasswordKanbanRenderer extends KanbanRenderer {
         onWillStart(async () => {
             await this._getBundles();
             await checkBundleSecurity(this.bundles, this.orm, this.dialogService);
-            // Reload model so records are fetched with the now-valid session.
-            // The Python read() silently returns [] when the session is not yet set,
-            // so the initial model load may have returned empty even though there are records.
-            await this.props.list.model.root.load();
             await this._checkUpdateRight();
+        });
+        onMounted(async () => {
+            // Python read() silently returns [] when the bundle session is not yet set,
+            // so the initial model load (before onWillStart ran checkBundleSecurity) may
+            // have returned empty. Reload now that the session is valid.
+            if (this.props.list.records.length === 0) {
+                await this.props.list.model.root.load();
+                this.props.list.model.notify();
+            }
         });
     }
     /*
