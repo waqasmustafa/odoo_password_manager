@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -vE '\\\\.\\(png|gif|jpg\\)$')",
+      "Bash(grep -vE '\\\\.\\(png|gif|jpg|css|scss\\)$')",
+      "Bash(grep -rn '\\\\$\\(' static/src)",
+      "Bash(python3 -c \"import xml.dom.minidom; xml.dom.minidom.parse\\('views/res_config_settings.xml'\\)\")",
+      "Bash(sed -i '' \"s/context=\\\\\"{'default_bundle_id': active_id}\\\\\"/context=\\\\\"{'default_bundle_id': id}\\\\\"/g\" views/password_bundle.xml)",
+      "Bash(python3 -c \"import xml.dom.minidom; xml.dom.minidom.parse\\('views/password_bundle.xml'\\)\")",
+      "Bash(python3 -c \"import xml.dom.minidom; xml.dom.minidom.parse\\('views/password_key.xml'\\); xml.dom.minidom.parse\\('views/password_bundle.xml'\\)\")",
+      "Bash(node --check static/src/views/kanban/password_kanban_record.js)"
+    ]
+  }
+}

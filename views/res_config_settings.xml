@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.password.manager</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Password Manager" name="odoo_password_manager">
+                    <block title="Password Manager Options" name="pwm_options">
+                        <setting string="Generate passwords on create"
+                                 help="If checked, Odoo will automatically generate a paraphrase as soon as a new password is registered">
+                            <field name="generate_passord_on_create"/>
+                        </setting>
+                        <setting string="Default length for generated password"
+                                 help="Define the default length for generated passwords">
+                            <field name="defau_password_length"/>
+                        </setting>
+                        <setting string="Default requirements for password"
+                                 help="Define how generated passwords should look by default">
+                            <field name="defau_password_charset" class="w-100"/>
+                        </setting>
+                        <setting string="Custom fields for passwords">
+                            <field name="module_odoo_password_manager_custom_fields"/>
+                            <div class="text-muted">
+                                Turn on to prepare custom fields for passwords. The tool
+                                <a href='https://apps.odoo.com/apps/modules/18.0/odoo_password_manager_custom_fields/'>
+                                    Password Manager: Custom Fields
+                                </a> (38 Euros extra) is required
+                            </div>
+                        </setting>
+                        <setting string="Export passwords"
+                                 help="Let users export found and selected passwords. The access group &quot;Access to export feature&quot; is required">
+                            <field name="password_management_export_option"/>
+                        </setting>
+                        <setting string="Portal vaults"
+                                 help="Turn on to allow sharing passwords with Odoo portal users">
+                            <field name="group_password_portal_sharing"/>
+                            <div class="mt8" invisible="not group_password_portal_sharing">
+                                <field name="portal_sharing_link_url"/>
+                                <field name="portal_sharing_phone"/>
+                                <field name="portal_sharing_email"/>
+                                <field name="portal_sharing_notes"/>
+                            </div>
+                            <div class="mt8" invisible="not group_password_portal_sharing">
+                                <label for="pw_custom_portal_fields"/>
+                                <div class="text-muted">
+                                    Select other password fields that should be shown in portal vaults
+                                </div>
+                                <field name="pw_custom_portal_fields" widget="many2many_tags" class="w-100"/>
+                                <field name="pw_custom_portal_fields_str" invisible="1"/>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Mass actions" name="pwm_mass_actions">
+                        <setting help="Server actions available as password mass actions">
+                            <field name="passwords_ir_actions_server_ids"
+                                   class="w-100"
+                                   context="{'default_model_id': ir_actions_server_pwm_default_model_id}"
+                            />
+                            <field name="passwords_ir_actions_server_ids_str" invisible="1"/>
+                            <field name="ir_actions_server_pwm_default_model_id" invisible="1"/>
+                        </setting>
+                    </block>
+                    <block title="Duplicates search" name="pwm_duplicates">
+                        <setting help="Select criteria for how to search password duplicates">
+                            <field name="duplicate_pw_fields_ids"
+                                   options="{'no_quick_create': True, 'no_create': True, 'no_edit': True}"
+                                   widget="many2many_tags"
+                                   class="w-100"
+                            />
+                            <field name="duplicate_pw_fields_ids_str" invisible="1"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+    <record id="res_config_settings_password_manager_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'odoo_password_manager'}</field>
+    </record>
+
+</odoo>

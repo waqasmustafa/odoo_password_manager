@@ -1,0 +1,149 @@
+/** @odoo-module **/
+
+import { _t } from "@web/core/l10n/translation";
+import {
+    checkBundleSecurity,
+    copy2ClipboardWithPopover,
+} from "@odoo_password_manager/views/dialogs/password_login_dialog/password_login_dialog";
+import { FormViewDialog } from "@web/views/view_dialogs/form_view_dialog";
+import { useService } from "@web/core/utils/hooks";
+
+import { Component, onWillStart, onMounted, useState } from "@odoo/owl";
+const componentModel = "password.key";
+
+
+export class PasswordPreview extends Component {
+    /*
+    * Re-write to import required services and update props on the component start
+    */
+    setup() {
+        this.orm = useService("orm");
+        this.state = useState({ massActions: null, duplicatesCount: null });
+        this.dialogService = useService("dialog");
+        this.popover = useService("popover");
+        onWillStart(async () => {
+            await this._loadPasswordMask(false);
+        });
+        onMounted(() => {
+            this.passwordInput = document.getElementById("password_preview_input_" + this.record.id);
+        })
+    }
+    /*
+    * The method to get record from props
+    */
+    get record() {
+        return this.props.record;
+    }
+    /*
+    * The method to get parent component (PasswordManager) from props
+    */
+    get passwordManager() {
+        return this.props.passwordManager;
+    }
+    /*
+    * The method to save password mask (its length) 
+    * We purposefully do not keep real password for security purposes
+    * We do load password when length is zero since migrated from previous versions passwords do not have length calced
+    * Simultaneously, keys without a password (should be a rare case), the len will be -1
+    */
+    async _loadPasswordMask(needReload) {
+        var passwordMask = false,
+            passwordLen = this.record.password_len;
+        if (needReload || !passwordLen || passwordLen == 0) {
+            const password = await this._loadPassword();
+            passwordLen = password.length;
+        }
+        if (passwordLen > 0) {
+            passwordMask = "*".repeat(passwordLen);
+        }        
+        Object.assign(this.state, { password: passwordMask });
+    }
+    /*
+    * The method to get the password since it is not present on kanban card (purposefully to avoid decryption)
+    */
+    async _loadPassword() {
+        const passwordlist = await this.orm.read(componentModel, [this.record.id], ["password"]);
+        const password = passwordlist[0].password;
+        return password
+    }   
+    /*
+    * The method to open the password full form
+    */
+    async _onOpenRecord() {
+        await checkBundleSecurity(this.props.bundleIds, this.orm, this.dialogService);
+        const modelContext = this.passwordManager.props.kanbanModel.config.context;
+        modelContext.needFormClose = true;
+        this.dialogService.add(FormViewDialog, {
+            resModel: componentModel,
+            resId: this.record.id,
+            context: modelContext,
+            title: _t("Edit Password"),
+            preventEdit: !this.passwordManager.props.canUpdate,
+            preventCreate: !this.passwordManager.props.canUpdate,
+            onRecordSaved: async (formRecord) => { 
+                const record = this.passwordManager.props.selection.find(rec => rec.id === this.record.id);
+                // to update the select value itself
+                Object.assign(record, this.passwordManager.props.kanbanModel.getSelectedData(formRecord.data));
+                this._loadPasswordMask(true);
+                await this.props.refreshAfterUpdate();
+            },
+        });
+    }
+    /*
+    * The method to remove a record from selection
+    */
+    async _onRemoveFromSelection() {
+        await checkBundleSecurity(this.props.bundleIds, this.orm, this.dialogService);
+        const record = this.passwordManager.props.currentSelection.find(rec => rec.resId === this.record.id);
+        if (record) {
+            record.toggleSelection(false);
+        }
+        else {
+            const selectedRecord = this.passwordManager.props.selection.find(rec => rec.id === this.record.id);
+            this.passwordManager.props.kanbanModel._updateModelSelection(selectedRecord, false);
+            this.props.refreshAfterUpdate();
+        }
+    }
+    /*
+    * The method to get real password and show that to the field
+    */
+    async _onTogglePassword() {
+        await checkBundleSecurity(this.props.bundleIds, this.orm, this.dialogService);
+        if (this.passwordInput.type == "text") {
+            this.passwordInput.value = this.state.password;
+            this.passwordInput.type = "password";
+        }
+        else {
+            this.passwordInput.value = await this._loadPassword();
+            this.passwordInput.type = "text";
+        }
+    }
+    /*
+    * The method to copy a password for clipboard
+    */
+    async _onCopyPassword(event) {
+        await checkBundleSecurity(this.props.bundleIds, this.orm, this.dialogService);
+        const password = await this._loadPassword();
+        await this._onCopyToClipBoard(event, password, true);
+    }
+    /*
+    * The general method to copy any text to clipboard and show popover
+    */
+    async _onCopyToClipBoard(event, content2Copy, noExtraSecurityCheck) {
+        if (!noExtraSecurityCheck) {
+            // in if to avoid double check in _onCopyPassword
+            await checkBundleSecurity(this.props.bundleIds, this.orm, this.dialogService);
+        }
+        const popoverEl = event.target.closest("tr");
+        copy2ClipboardWithPopover(this.popover, popoverEl, content2Copy);
+    }
+    /*
+    * The method to open the password link
+    */
+    async _onOpenUrl(linkURL) {
+        await checkBundleSecurity(this.props.bundleIds, this.orm, this.dialogService);
+        window.open(linkURL, "_blank");
+    }
+}
+
+PasswordPreview.template = "odoo_password_manager.PasswordPreview";

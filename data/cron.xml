@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="password_update_check" model="ir.cron">
+            <field name="name">[Password Manager] Check whether passwords need update</field>
+            <field name="model_id" ref="odoo_password_manager.model_password_access"/>
+            <field name="state">code</field>
+            <field name="code">model.check_passwords_update()</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')" />
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+        <record id="password_vault_clear" model="ir.cron">
+            <field name="name">[Password Manager] Clear Expired Portal Vaults</field>
+            <field name="model_id" ref="odoo_password_manager.model_portal_password_bundle"/>
+            <field name="state">code</field>
+            <field name="code">model.action_clear_expired_vaults()</field>
+            <field name="nextcall" eval="(DateTime.now() + timedelta(days=1)).strftime('%Y-%m-%d 00:10:00')" />
+            <field name="user_id" ref="base.user_root"/>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+
+      </data>
+</odoo>
