@@ -3,10 +3,9 @@
 import { _t } from "@web/core/l10n/translation";
 import { checkBundleSecurity } from "@odoo_password_manager/views/dialogs/password_login_dialog/password_login_dialog";
 import { Domain } from "@web/core/domain";
-import { loadCSS, loadJS } from "@web/core/assets";
 import { PwmJsTreeContainer } from "@odoo_password_manager/components/pwm_jstree_container/pwm_jstree_container";
 import { useService } from "@web/core/utils/hooks";
-import { Component, onWillStart } from "@odoo/owl";
+import { Component } from "@odoo/owl";
 
 const componentModel = "password.key";
 const searchSections = {
@@ -27,13 +26,6 @@ export class PasswordNavigation extends Component {
         this.asc = false;
         this.jsTreeDomain = [];
         this.jsTreeDomains = {};
-        onWillStart(async () => {
-            const proms = [
-                loadJS("/odoo_password_manager/static/lib/jstree/jstree.min.js"),
-                loadCSS("/odoo_password_manager/static/lib/jstree/themes/default/style.css"),
-            ]
-            return Promise.all(proms);
-        });
     }
     /*
     * The method to prepare jstreecontainer props

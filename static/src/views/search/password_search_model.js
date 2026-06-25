@@ -24,7 +24,7 @@ export class PasswordSearchModel extends SearchModel {
             domain = Domain.and([domain, this.jsTreeDomain]);
             return params.raw
                 ? domain
-                : domain.toList(Object.assign({}, this.globalContext, user.context));
+                : domain.toList(Object.assign({}, this.globalContext || {}, user.context));
         } catch (error) {
             throw new Error(
                 `${_t("Failed to evaluate the domain")} ${domain.toString()}.\n${

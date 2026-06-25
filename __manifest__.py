@@ -36,6 +36,8 @@
     ],
     "assets": {
         "web.assets_backend": [
+                "odoo_password_manager/static/lib/jstree/themes/default/style.css",
+                "odoo_password_manager/static/lib/jstree/jstree.min.js",
                 "odoo_password_manager/static/src/views/kanban/*.scss",
                 "odoo_password_manager/static/src/views/kanban/*.xml",
                 "odoo_password_manager/static/src/views/kanban/*.js",
