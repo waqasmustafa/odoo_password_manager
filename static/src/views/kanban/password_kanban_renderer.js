@@ -6,7 +6,7 @@ import { PasswordKanbanRecord } from "./password_kanban_record";
 import { PasswordManager } from "@odoo_password_manager/components/password_manager/password_manager";
 import { PasswordNavigation } from "@odoo_password_manager/components/password_navigation/password_navigation";
 import { useService } from "@web/core/utils/hooks";
-import { onWillStart, useState, onWillRender } from "@odoo/owl";
+import { onWillStart, useState } from "@odoo/owl";
 const componentModel = "password.key";
 
 
@@ -14,37 +14,36 @@ export class PasswordKanbanRenderer extends KanbanRenderer {
     /*
     * Re-write to save update rights
     */
-    setup(params) {
+    setup() {
         this.orm = useService("orm");
         this.dialogService = useService("dialog");
         this.state = useState({ canUpdate: null });
-        this.bundles = []
+        this.bundles = [];
         super.setup(...arguments);
         onWillStart(async () => {
-            await this._getBundles(this.props);
+            await this._getBundles();
             await checkBundleSecurity(this.bundles, this.orm, this.dialogService);
-            await this._checkUpdateRight(this.props);
-        });
-        onWillRender(async () => {
-            await checkBundleSecurity(this.bundles, this.orm, this.dialogService);
+            // Reload model so records are fetched with the now-valid session.
+            // The Python read() silently returns [] when the session is not yet set,
+            // so the initial model load may have returned empty even though there are records.
+            await this.props.list.model.root.load();
+            await this._checkUpdateRight();
         });
     }
     /*
     * The method to find actively used bundle(s)
     */
-    async _getBundles(props) {
+    async _getBundles() {
         if (this.props.list.model.config.context.default_bundle_ids) {
-            this.bundles = this.props.list.model.config.context.default_bundle_ids
-        }
-        else {
-            // we are for all the passwords
+            this.bundles = this.props.list.model.config.context.default_bundle_ids;
+        } else {
             this.bundles = await this.orm.call("password.bundle", "action_return_all_active_bundles", []);
-        };
+        }
     }
     /*
     * The method to check the access rights for bundle(s)
     */
-    async _checkUpdateRight(props) {
+    async _checkUpdateRight() {
         const canUpdate = await this.orm.call(componentModel, "action_check_bundle_edit_rights", [this.bundleIds]);
         Object.assign(this.state, { canUpdate: canUpdate });
     }
