@@ -6,7 +6,6 @@ import { KanbanRecord } from "@web/views/kanban/kanban_record";
 // (which re-wraps the card to add click/keydown handlers) must be re-checked against the Odoo 18
 // KanbanRecord implementation. See MIGRATION_NOTES.md.
 import { user } from "@web/core/user";
-import { xml } from "@odoo/owl";
 
 const notGlobalActions = ["a", ".dropdown", ".oe_kanban_action", ".jstr-kanban-copy"].join(",");
 
@@ -50,13 +49,3 @@ export class PasswordKanbanRecord extends KanbanRecord {
         return this.props.record.onRecordClick(ev, {});
     }
 };
-
-PasswordKanbanRecord.template = xml`
-    <div
-        role="article"
-        t-att-class="getRecordClasses()"
-        t-on-click.synthetic="onGlobalClick"
-        t-on-keydown.synthetic="onKeydown"
-        t-ref="root">
-        <t t-call="{{ templates.card }}"/>
-    </div>`;
