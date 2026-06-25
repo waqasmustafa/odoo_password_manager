@@ -2,7 +2,7 @@
 
 import publicWidget from "@web/legacy/js/public/public_widget";
 import { rpc } from "@web/core/network/rpc";
-import { attachComponent } from "@web/legacy/utils";
+import { App } from "@odoo/owl";
 import { PortalPassword } from "@odoo_password_manager/components/portal_password/portal_password";
 
 /*
@@ -41,14 +41,16 @@ publicWidget.registry.portalPasswordMask = publicWidget.Widget.extend({
     * Re-write to initiate password mask component
     */
     async start() {
-        // OwlCompatibility.ComponentWrapper was removed in Odoo 17; attachComponent mounts an OWL
-        // component from a public widget. Verify in a running Odoo 18 instance.
         const passwordSpan = this.el;
-        await attachComponent(this, passwordSpan, PortalPassword, {
-            passwordId: parseInt(passwordSpan.dataset.id),
-            passwordLen: parseInt(passwordSpan.dataset.pw_len),
-            showPopover: this._showPopover.bind(this),
+        const app = new App(PortalPassword, {
+            props: {
+                passwordId: parseInt(passwordSpan.dataset.id),
+                passwordLen: parseInt(passwordSpan.dataset.pw_len),
+                showPopover: this._showPopover.bind(this),
+            },
+            env: {},
         });
+        await app.mount(passwordSpan);
     },
     /*
     * The method to show/hide a popopver for copy to the clipboard actopm
