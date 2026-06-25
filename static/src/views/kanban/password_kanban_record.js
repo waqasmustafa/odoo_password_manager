@@ -5,7 +5,6 @@ import { KanbanRecord } from "@web/views/kanban/kanban_record";
 // KANBAN_BOX_ATTRIBUTE was removed from kanban_arch_parser. The custom record template below
 // (which re-wraps the card to add click/keydown handlers) must be re-checked against the Odoo 18
 // KanbanRecord implementation. See MIGRATION_NOTES.md.
-import { KANBAN_CARD_ATTRIBUTE } from "@web/views/kanban/kanban_arch_parser";
 import { user } from "@web/core/user";
 import { xml } from "@odoo/owl";
 
@@ -59,5 +58,5 @@ PasswordKanbanRecord.template = xml`
         t-on-click.synthetic="onGlobalClick"
         t-on-keydown.synthetic="onKeydown"
         t-ref="root">
-        <t t-call="{{ templates['${KANBAN_CARD_ATTRIBUTE}'] }}"/>
+        <t t-call="{{ templates.card }}"/>
     </div>`;
